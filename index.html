@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>English 5 Speaking – Hoa Khuong 2</title>
+    <style>
+        :root { --primary: #1565c0; --accent: #2ecc71; --error: #FF7F50; --bg: #f0f7ff; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: "Comic Sans MS", "Lexend", cursive, sans-serif; background: var(--bg); margin: 0; padding: 15px; }
+        
+        .container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h1, h2 { text-align: center; color: var(--primary); margin: 5px 0; }
+        h2 { font-size: 1rem; color: #666; margin-bottom: 15px; }
+
+        .card { background: #f9fbff; padding: 15px; border-radius: 20px; margin-bottom: 15px; border: 2px dashed #bbdefb; }
+        input, select, textarea { width: 100%; padding: 12px; border-radius: 15px; border: 2px solid #e3f2fd; font-size: 16px; margin-top: 8px; font-family: inherit; }
+        
+        .unit-title { background: #ffeb3b; padding: 10px; border-radius: 50px; text-align: center; font-weight: bold; margin-bottom: 10px; color: #333; }
+        .sample-box { background: #fff; padding: 15px; border-radius: 15px; border-left: 5px solid var(--accent); line-height: 1.6; font-size: 1.1rem; }
+
+        .btn-record { background: linear-gradient(135deg, var(--primary), #6c5ce7); color: white; border: none; padding: 18px; border-radius: 50px; font-size: 1.2rem; font-weight: bold; width: 100%; cursor: pointer; box-shadow: 0 8px 15px rgba(21, 101, 192, 0.3); transition: 0.3s; }
+        .btn-record.recording { background: #e74c3c; animation: pulse 1.5s infinite; }
+        .btn-listen { background: #fff; color: var(--primary); border: 2px solid var(--primary); padding: 8px 15px; border-radius: 50px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+        /* Feedback Styles */
+        .word-correct { color: var(--accent); font-weight: bold; }
+        .word-coral { color: var(--error); font-weight: bold; text-decoration: underline; cursor: pointer; }
+        .ai-suggest { background: #e8f5e9; padding: 12px; border-radius: 12px; border-left: 4px solid var(--accent); margin-top: 10px; font-size: 0.95rem; }
+
+        /* Certificate */
+        .certificate { display: none; margin-top: 30px; padding: 30px 15px; border: 8px double #fbc02d; background: #fff; text-align: center; border-radius: 25px; animation: slideUp 0.5s ease; }
+        .cert-name { font-size: 2rem; color: #6c5ce7; margin: 10px 0; font-weight: bold; border-bottom: 2px solid #eee; display: inline-block; }
+        .sign-box { display: flex; justify-content: space-around; margin-top: 40px; font-size: 0.8rem; line-height: 1.4; }
+
+        #micStatus { display: none; color: #e74c3c; font-size: 0.8rem; text-align: center; margin-top: 5px; }
+        
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎤 English 5 Speaking</h1>
+    <h2>Hoa Khuong 2 Primary School</h2>
+
+    <div class="card">
+        <div style="display:flex; gap:10px">
+            <input id="studentName" placeholder="Student name...">
+            <input id="studentClass" placeholder="Class (e.g. 5/1)">
+        </div>
+        <select id="modeSel">
+            <option value="unit">Speaking by Unit (Chế độ theo bài)</option>
+            <option value="free">Free Speaking (AI Teacher sửa lỗi)</option>
+        </select>
+    </div>
+
+    <div id="unitSection" class="card">
+        <select id="unitSel"></select>
+        <div class="unit-title" id="unitTitle">Unit 1</div>
+        <div class="sample-box" id="sampleText"></div>
+        <button class="btn-listen" onclick="playSample()">▶ Listen Sample (Kid Voice)</button>
+    </div>
+
+    <div class="card">
+        <textarea id="output" rows="3" placeholder="Press Start and speak English..."></textarea>
+        <button id="recBtn" class="btn-record" onclick="toggleRecord()">🎙 START SPEAKING</button>
+        <div id="micStatus">⚠️ Please allow Microphone access in your browser settings.</div>
+    </div>
+
+    <div id="feedbackCard" class="card" style="display:none">
+        <h3 style="margin-top:0">🤖 AI Feedback</h3>
+        <div id="feedbackContent"></div>
+    </div>
+
+    <div class="certificate" id="certificate">
+        <div style="font-weight:bold; color:var(--primary); font-size:1.2rem">HOA KHUONG 2 PRIMARY SCHOOL</div>
+        <div style="font-size:1.5rem; margin:15px 0; color:#b8860b">CERTIFICATE OF EXCELLENCE</div>
+        <p>Proudly presented to</p>
+        <div class="cert-name" id="cName">...</div>
+        <p id="cClassAndUnit"></p>
+        <div style="font-size:3rem" id="cStar">⭐⭐⭐⭐⭐</div>
+        <div class="sign-box">
+            <div><b>Principal</b><br><br>Tran Thi Kim Yen</div>
+            <div><b>Teacher</b><br><br>Pham Thi Ngoc Bich</div>
+        </div>
+    </div>
+</div>
+
+<audio id="clap" src="https://www.soundjay.com/human/applause-8.mp3"></audio>
+
+<script>
+/* ===== DỮ LIỆU 20 UNIT CHI TIẾT ===== */
+const units = {
+    1: ["Unit 1: All about me", "I’m Hoang. I’m in class 5/3. I live in the countryside. My favourite colour is yellow. My favourite animal is a dolphin. My favourite food is a sandwich. My favourite sport is table tennis."],
+    2: ["Unit 2: Our homes", "I live in a flat. My address is 65 Le Loi Street. It is a big and modern building in the city. I love my home."],
+    3: ["Unit 3: My foreign friends", "My friend is from Australia. He is friendly and helpful. He is very active and clever."],
+    4: ["Unit 4: Our free-time activities", "In my free time, I go for a walk and play the violin. My brother likes surfing the Internet and watering the flowers."],
+    5: ["Unit 5: My future job", "I’d like to be a teacher because I’d like to teach children. My friend wants to be a firefighter to help people."],
+    6: ["Unit 6: Our school rooms", "The computer room is on the second floor. Go upstairs and turn right. The library is very big and modern."],
+    7: ["Unit 7: Our favourite school activities", "I like doing projects because it is interesting. We also like singing English songs and reading stories."],
+    8: ["Unit 8: In our classroom", "The board is in front of the class. The clock is above the door. The crayons are on the table."],
+    9: ["Unit 9: Our outdoor activities", "Yesterday, we went camping and danced around the campfire. We watched the fish in the pond."],
+    10: ["Unit 10: Our school trip", "We visited Ba Na Hills and took many photos. It was a fantastic trip last weekend."],
+    11: ["Unit 11: Family time", "Last weekend, my family went to the beach together. We took a boat trip around the bay."],
+    12: ["Unit 12: Our Tet holiday", "At Tet, we decorate the house and visit our relatives. I get lucky money from my grandparents."],
+    13: ["Unit 13: Our special days", "On Children's Day, we have fun and get lovely gifts. We eat pizza and drink milk tea."],
+    14: ["Unit 14: Staying healthy", "I eat healthy food and exercise three times a week. My sister does yoga to stay healthy."],
+    15: ["Unit 15: Our health", "I have a sore throat. I should drink warm water. I shouldn't eat ice cream or drink cold water."],
+    16: ["Unit 16: Seasons and weather", "It is cloudy in autumn and cold in winter. In summer, it is usually hot and sunny."],
+    17: ["Unit 17: Stories for children", "The story is about a clever fox and a greedy crow. I also like the story of the tortoise and the hare."],
+    18: ["Unit 18: Means of transport", "I want to visit Dragon Bridge. I can get there by bus or by bicycle. It is very beautiful."],
+    19: ["Unit 19: Places of interest", "I think Hoi An Old Town is peaceful. It is about twenty-nine kilometres from Da Nang city."],
+    20: ["Unit 20: Our summer holidays", "This summer, I am going to visit Phong Nha Cave. I am going to go camping and join a music club."]
+};
+
+// Khởi tạo danh sách Unit
+const unitSel = document.getElementById("unitSel");
+for(let i=1; i<=20; i++) {
+    let opt = document.createElement("option");
+    opt.value = i; opt.text = "Unit " + i;
+    unitSel.add(opt);
+}
+
+unitSel.onchange = updateUnit;
+function updateUnit() {
+    const data = units[unitSel.value];
+    document.getElementById("unitTitle").innerText = data[0];
+    document.getElementById("sampleText").innerText = data[1];
+    document.getElementById("feedbackCard").style.display = "none";
+    document.getElementById("certificate").style.display = "none";
+}
+updateUnit();
+
+/* ===== HỆ THỐNG GIỌNG NÓI (KID VOICE) ===== */
+function playSample(text) {
+    window.speechSynthesis.cancel();
+    const msg = new SpeechSynthesisUtterance(text || document.getElementById("sampleText").innerText);
+    msg.lang = 'en-GB';
+    msg.rate = 0.8;
+    msg.pitch = 1.3; // Tăng pitch để tạo giọng trẻ con
+    window.speechSynthesis.speak(msg);
+}
+
+/* ===== NHẬN DIỆN GIỌNG NÓI ===== */
+let recognition;
+let isRecording = false;
+
+function initRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return alert("Browser not supported!");
+    
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+
+    recognition.onresult = (e) => {
+        const result = e.results[0][0].transcript;
+        document.getElementById("output").value = result;
+        processFeedback(result);
+    };
+
+    recognition.onerror = () => {
+        document.getElementById("micStatus").style.display = "block";
+        stopUI();
+    };
+    recognition.onend = () => stopUI();
+}
+
+function toggleRecord() {
+    // Kích hoạt audio context (cần thiết cho di động)
+    playSample(" "); 
+    
+    if (!recognition) initRecognition();
+    if (isRecording) {
+        recognition.stop();
+    } else {
+        recognition.start();
+        isRecording = true;
+        document.getElementById("recBtn").innerText = "🛑 STOP & CHECK";
+        document.getElementById("recBtn").classList.add("recording");
+        document.getElementById("micStatus").style.display = "none";
+    }
+}
+
+function stopUI() {
+    isRecording = false;
+    document.getElementById("recBtn").innerText = "🎙 START SPEAKING";
+    document.getElementById("recBtn").classList.remove("recording");
+}
+
+/* ===== XỬ LÝ PHẢN HỒI AI ===== */
+function processFeedback(said) {
+    const mode = document.getElementById("modeSel").value;
+    const feedbackCard = document.getElementById("feedbackCard");
+    const fbContent = document.getElementById("feedbackContent");
+    feedbackCard.style.display = "block";
+    
+    if (mode === "unit") {
+        const model = document.getElementById("sampleText").innerText;
+        const modelWords = model.split(" ");
+        const saidLower = said.toLowerCase();
+        
+        let html = "";
+        let correctCount = 0;
+        
+        modelWords.forEach(word => {
+            let cleanWord = word.toLowerCase().replace(/[.,!]/g, "");
+            if (saidLower.includes(cleanWord)) {
+                html += `<span class="word-correct">${word}</span> `;
+                correctCount++;
+            } else {
+                html += `<span class="word-coral" onclick="playSample('${cleanWord}')">${word}</span> `;
+            }
+        });
+
+        fbContent.innerHTML = `<p>${html}</p><small>(Chạm vào từ màu cam để nghe lại mẫu)</small>`;
+        
+        // Thuật toán chấm sao linh hoạt: Chỉ cần đúng > 60% là cho 5 sao động viên
+        let starRating = (correctCount / modelWords.length) > 0.6 ? 5 : (correctCount / modelWords.length) > 0.3 ? 4 : 3;
+        showCert(starRating);
+
+    } else {
+        // Chế độ Free: Sửa lỗi cơ bản
+        let suggestion = said.toLowerCase()
+            .replace(/\bi is\b/g, "I am")
+            .replace(/\bshe have\b/g, "she has")
+            .replace(/\bhe have\b/g, "he has")
+            .replace(/\bi like swim\b/g, "I like swimming")
+            .replace(/\byou like to be\b/g, "I'd like to be");
+            
+        suggestion = suggestion.charAt(0).toUpperCase() + suggestion.slice(1);
+        
+        fbContent.innerHTML = `
+            <p><b>You said:</b> "${said}"</p>
+            <div class="ai-suggest">
+                <b>💡 Teacher's Suggestion:</b><br>
+                "${suggestion}"
+                <button class="btn-listen" style="padding:4px 10px; font-size:12px" onclick="playSample('${suggestion}')">🔊 Listen</button>
+            </div>
+        `;
+        showCert(5); // Free talk luôn khuyến khích 5 sao
+    }
+}
+
+function showCert(stars) {
+    document.getElementById("clap").play();
+    const cert = document.getElementById("certificate");
+    cert.style.display = "block";
+    document.getElementById("cName").innerText = document.getElementById("studentName").value || "Super Star";
+    document.getElementById("cClassAndUnit").innerText = "Class: " + (document.getElementById("studentClass").value || "5/...") + " | " + units[unitSel.value][0];
+    document.getElementById("cStar").innerText = "⭐".repeat(stars);
+    cert.scrollIntoView({behavior: 'smooth'});
+}
+</script>
+</body>
+</html>
